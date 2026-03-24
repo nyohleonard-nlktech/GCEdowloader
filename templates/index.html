@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GCE Archive Explorer | Nyoh Leonard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #1e1e2e;
+      color: #cdd6f4;
+      font-family: 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .card {
+      background: #181825;
+      border-radius: 16px;
+      padding: 40px;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+
+    h1 {
+      color: #89b4fa;
+      font-size: 22px;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      color: #a6adc8;
+      font-size: 13px;
+      text-align: center;
+      margin-bottom: 30px;
+      font-style: italic;
+    }
+
+    .divider {
+      height: 1px;
+      background: #313244;
+      margin-bottom: 30px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      color: #a6adc8;
+      margin-bottom: 6px;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 10px 14px;
+      background: #313244;
+      border: none;
+      border-radius: 8px;
+      color: #cdd6f4;
+      font-size: 14px;
+      margin-bottom: 18px;
+      outline: none;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      background: #89b4fa;
+      color: #1e1e2e;
+      font-size: 15px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.2s;
+    }
+
+    button:hover { background: #b4befe; }
+    button:disabled { background: #45475a; cursor: not-allowed; }
+
+    .log {
+      margin-top: 20px;
+      background: #11111b;
+      border-radius: 8px;
+      padding: 14px;
+      font-family: 'Consolas', monospace;
+      font-size: 12px;
+      color: #a6e3a1;
+      min-height: 60px;
+      display: none;
+    }
+
+    .error { color: #f38ba8; }
+    .spinner { display: none; text-align: center; margin-top: 10px; color: #89b4fa; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>GCE ARCHIVE EXPLORER</h1>
+    <p class="subtitle">Engineered by Nyoh Leonard — GCE Archive Explorer</p>
+    <div class="divider"></div>
+
+    <label>Subject</label>
+    <select id="subject">
+      {% for subject in subjects %}
+        <option value="{{ subject }}">{{ subject.title() }}</option>
+      {% endfor %}
+    </select>
+
+    <div class="row">
+      <div>
+        <label>Year</label>
+        <input type="number" id="year" value="2024" min="2000" max="2030">
+      </div>
+      <div>
+        <label>Paper (1 / 2 / 3)</label>
+        <input type="number" id="paper" value="2" min="1" max="3">
+      </div>
+    </div>
+
+    <button id="dlBtn" onclick="startDownload()">
+      INITIALIZE DOWNLOAD
+    </button>
+
+    <div class="spinner" id="spinner">⏳ Searching archive...</div>
+    <div class="log" id="log"></div>
+  </div>
+
+  <script>
+    async function startDownload() {
+      const btn = document.getElementById('dlBtn');
+      const log = document.getElementById('log');
+      const spinner = document.getElementById('spinner');
+
+      const subject = document.getElementById('subject').value;
+      const year = document.getElementById('year').value;
+      const paper = document.getElementById('paper').value;
+
+      btn.disabled = true;
+      spinner.style.display = 'block';
+      log.style.display = 'block';
+      log.className = 'log';
+      log.textContent = `> Probing archive for ${subject} Paper ${paper} (${year})...`;
+
+      try {
+        const response = await fetch('/download', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subject, year, paper })
+        });
+
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${subject}_paper${paper}_${year}.pdf`;
+          a.click();
+          window.URL.revokeObjectURL(url);
+          log.textContent = `> ✅ Download successful: ${subject} Paper ${paper} (${year})`;
+        } else {
+          const data = await response.json();
+          log.className = 'log error';
+          log.textContent = `> ❌ ${data.error}`;
+        }
+      } catch (err) {
+        log.className = 'log error';
+        log.textContent = `> ❌ Connection error. Please try again.`;
+      }
+
+      btn.disabled = false;
+      spinner.style.display = 'none';
+    }
+  </script>
+</body>
+</html>
