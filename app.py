@@ -44,8 +44,8 @@ def index():
         subjects = list(SUBJECT_SLUGS.keys())
         return render_template('index.html', subjects=subjects)
     except Exception as e:
-        logging.error(f"Failed to render index template: {e}")
-        return jsonify({'error': 'Failed to load page. Please try again later.'}), 500
+        logging.error(f"Failed to render index: {e}")
+        return jsonify({'error': 'Failed to load page'}), 500
 
 @app.route('/download', methods=['POST'])
 def download():
@@ -84,5 +84,3 @@ def download():
 
     return jsonify({'error': 'Paper not found. Try a different year or paper number.'}), 404
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
