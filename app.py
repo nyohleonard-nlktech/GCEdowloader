@@ -3,6 +3,9 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import requests
 import re
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
 
@@ -31,10 +34,18 @@ def extract_pdf(html):
     match = re.search(r'["\']([^"\']*?\.pdf[^"\']*?)["\']', html, re.IGNORECASE)
     return urljoin(BASE_URL, match.group(1)) if match else None
 
+@app.route('/health')
+def health():
+    return 'OK', 200
+
 @app.route('/')
 def index():
-    subjects = list(SUBJECT_SLUGS.keys())
-    return render_template('index.html', subjects=subjects)
+    try:
+        subjects = list(SUBJECT_SLUGS.keys())
+        return render_template('index.html', subjects=subjects)
+    except Exception as e:
+        logging.error(f"Failed to render index template: {e}")
+        return jsonify({'error': 'Failed to load page. Please try again later.'}), 500
 
 @app.route('/download', methods=['POST'])
 def download():
@@ -72,3 +83,6 @@ def download():
             continue
 
     return jsonify({'error': 'Paper not found. Try a different year or paper number.'}), 404
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
