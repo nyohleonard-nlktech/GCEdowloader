@@ -72,6 +72,3 @@ def download():
             continue
 
     return jsonify({'error': 'Paper not found. Try a different year or paper number.'}), 404
-
-if __name__ == '__main__':
-    app.run(debug=True)
