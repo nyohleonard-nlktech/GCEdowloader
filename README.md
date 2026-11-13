@@ -1,74 +1,53 @@
 # GCE Downloader
 
-**A Flask web application for locating and downloading examination-paper PDFs from the configured SchoolFAQs source.**
-
-The application presents a subject selection page and exposes a download route. It constructs candidate paper URLs, fetches the source pages, extracts PDF links, and streams the PDF response to the user.
+A Flask web application for locating and downloading examination-paper PDFs from the configured SchoolFAQs source website.
 
 ## Features
-
-- Flask web interface.
-- Subject-to-source-slug mapping for selected subjects.
-- Candidate URL generation using subject, paper number, and year.
-- PDF link extraction from HTML anchors, iframes, and embeds.
+- Flask subject-selection interface.
+- Subject-to-source-slug mapping.
+- Candidate paper URL generation from subject, paper number, and year.
+- PDF URL extraction from HTML anchors, iframes, and embeds.
 - Streamed PDF response with a generated filename.
 - Health endpoint.
 
-## Technology
-
-Python, Flask, Requests, BeautifulSoup, and Gunicorn.
+## Stack
+Python, Flask, Requests, BeautifulSoup, Gunicorn.
 
 ## Requirements
+Python 3.9+, pip, and network access to the configured upstream source.
 
-- Python 3.9+
-- pip
-- Network access to the configured source website
-
-## Installation
-
+## Setup
 ```bash
 git clone https://github.com/nyohleonard-nlktech/GCEdowloader.git
 cd GCEdowloader
-
 python -m venv .venv
 ```
 
-Activate the environment:
-
+Activate:
 ```bash
 # macOS / Linux
 source .venv/bin/activate
-
 # Windows PowerShell
 .venv\Scripts\Activate.ps1
 ```
 
-Install dependencies:
-
+Install and run:
 ```bash
-python -m pip install --upgrade pip
 pip install -r requirements.txt
-```
-
-## Run locally
-
-```bash
 python app.py
 ```
 
-Open `http://127.0.0.1:5000`.
+Open http://127.0.0.1:5000.
 
-## Routes
+## HTTP routes
 
 | Method | Route | Purpose |
 |---|---|---|
-| GET | `/` | Render the subject selection page |
-| GET | `/health` | Health check |
-| POST | `/download` | Find and stream a requested paper PDF |
+| GET | / | Render subject selection page |
+| GET | /health | Health check |
+| POST | /download | Locate and stream a paper PDF |
 
-### Download request
-
-`POST /download`
-
+Example JSON request to POST /download:
 ```json
 {
   "subject": "Computer Science",
@@ -77,25 +56,14 @@ Open `http://127.0.0.1:5000`.
 }
 ```
 
-The request body is JSON. The source page lookup and PDF extraction depend on the configured upstream website's URL conventions and HTML structure.
-
-## Project structure
-
+## Structure
 ```text
-.
-├── app.py
-├── requirements.txt
-├── templates/
-└── .github/
+app.py
+requirements.txt
+templates/
+.github/
 ```
 
-## Reliability and responsible use
+The upstream site's URL conventions and markup may change. Respect its terms, copyright, and access rules; only download or redistribute materials where permitted. Add input validation, request timeouts for PDF downloads, and rate limiting before public deployment.
 
-- The upstream website may change its URL patterns or page markup.
-- Requests use timeouts for source-page lookups; PDF streaming should also use explicit timeouts and error handling before production.
-- Respect the source website's terms, copyright, and access rules. Only download or redistribute papers where permitted.
-- Add input validation, rate limiting, and tests for failed upstream requests.
-
-## License
-
-No license file is currently present. All rights reserved unless an explicit license is added.
+No license file is present; all rights reserved unless an explicit license is added.
